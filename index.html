@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monochat</title>
+  <meta name="description" content="Minimal black-and-white chat app powered by Supabase" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Ccircle cx='32' cy='32' r='18' fill='%23000'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="app-shell">
+    <section id="auth-screen" class="screen">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <div class="logo">Mono</div>
+          <div>
+            <h1>Monochat</h1>
+            <p>Fast, quiet conversations in black and white.</p>
+          </div>
+        </div>
+        <form id="auth-form" class="auth-form">
+          <label for="auth-email">Email</label>
+          <input id="auth-email" type="email" autocomplete="email" placeholder="you@studio.com" required />
+          <label for="auth-password">Password (optional)</label>
+          <input id="auth-password" type="password" autocomplete="current-password" placeholder="********" />
+          <div class="auth-actions">
+            <button type="button" id="magic-link-btn" class="ghost">Send magic link</button>
+            <button type="submit" id="password-btn">Sign in / Sign up</button>
+          </div>
+        </form>
+        <p id="auth-note" class="auth-note"></p>
+      </div>
+    </section>
+
+    <section id="app" class="screen hidden">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <div class="logo">Mono</div>
+          <div class="brand-actions">
+            <button id="new-chat-btn">New chat</button>
+            <button id="settings-btn" class="ghost">Settings</button>
+          </div>
+        </div>
+        <div class="profile-mini">
+          <div class="avatar" id="profile-avatar">ME</div>
+          <div class="profile-meta">
+          <div id="profile-name">Loading...</div>
+            <button id="logout-btn" class="ghost">Log out</button>
+          </div>
+        </div>
+        <div class="sidebar-search">
+          <input id="chat-search" type="search" placeholder="Filter chats" />
+        </div>
+        <div id="chat-list" class="chat-list"></div>
+        <button id="notification-btn" class="notification-btn" aria-label="Notifications">
+          <span class="notification-icon">o</span>
+          <span>Activity</span>
+          <span id="notification-dot" class="dot hidden"></span>
+        </button>
+      </aside>
+
+      <main class="chat-view">
+        <header class="chat-header">
+          <div>
+            <h2 id="chat-title">Select a chat</h2>
+            <div id="chat-subtitle" class="chat-subtitle"></div>
+          </div>
+          <div class="chat-header-actions">
+            <form id="chat-search-form" class="chat-search">
+              <input id="chat-search-input" type="search" placeholder="Search in chat" />
+              <button type="submit" class="ghost">Search</button>
+              <button type="button" id="clear-search-btn" class="ghost">Clear</button>
+            </form>
+            <button id="mute-chat-btn" class="ghost">Mute</button>
+            <button id="add-member-btn" class="ghost">Add</button>
+          </div>
+          <div id="typing-indicator" class="typing-indicator"></div>
+        </header>
+
+        <section id="message-list" class="messages">
+          <div id="scroll-anchor" class="scroll-anchor"></div>
+        </section>
+
+        <div id="reply-preview" class="reply-preview hidden"></div>
+        <div id="attachment-preview" class="attachment-preview hidden"></div>
+
+        <form id="composer" class="composer">
+          <textarea id="message-input" rows="1" placeholder="Message..." aria-label="Message"></textarea>
+          <div class="composer-actions">
+            <label class="file-btn">
+              <input id="attachment-input" type="file" accept="image/*" />
+              Attach
+            </label>
+            <div class="composer-buttons">
+              <button type="button" id="emoji-btn" class="ghost">🙂</button>
+              <button type="submit" id="send-btn">Send</button>
+            </div>
+          </div>
+        </form>
+      </main>
+    </section>
+  </div>
+
+  <div id="settings-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" data-close>x</button>
+      <h3>Settings</h3>
+      <div class="modal-section">
+        <h4>Profile</h4>
+        <label for="display-name-input">Display name</label>
+        <input id="display-name-input" type="text" />
+        <button id="save-profile-btn">Save profile</button>
+      </div>
+      <div class="modal-section">
+        <h4>Notifications</h4>
+        <div class="toggle-row">
+          <label for="push-toggle">Push notifications</label>
+          <input id="push-toggle" type="checkbox" />
+        </div>
+        <div class="toggle-row">
+          <label for="email-toggle">Email alerts</label>
+          <input id="email-toggle" type="checkbox" />
+        </div>
+        <div class="time-row">
+          <label for="quiet-start">Quiet hours</label>
+          <input id="quiet-start" type="time" />
+          <span>to</span>
+          <input id="quiet-end" type="time" />
+          <button id="save-quiet-btn" class="ghost">Save</button>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4>Per-chat mute</h4>
+        <div id="mute-list" class="mute-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="new-chat-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-card">
+      <button class="modal-close" data-close>x</button>
+      <h3>New chat</h3>
+      <div class="tab-row">
+        <button type="button" data-tab="dm" class="tab active">Direct</button>
+        <button type="button" data-tab="group" class="tab">Group</button>
+      </div>
+      <div id="dm-panel" class="tab-panel">
+        <label for="dm-search">Find someone</label>
+        <input id="dm-search" type="search" placeholder="Search display name" />
+        <div id="dm-results" class="search-results"></div>
+        <button id="create-dm-btn">Start DM</button>
+      </div>
+      <div id="group-panel" class="tab-panel hidden">
+        <label for="group-title">Group title</label>
+        <input id="group-title" type="text" placeholder="New channel" />
+        <label for="group-search">Add people</label>
+        <input id="group-search" type="search" placeholder="Search display name" />
+        <div id="group-results" class="search-results"></div>
+        <div id="group-selected" class="selected-list"></div>
+        <button id="create-group-btn">Create group</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightbox" class="modal hidden" aria-hidden="true">
+    <div class="lightbox-card">
+      <button class="modal-close" data-close>x</button>
+      <img id="lightbox-image" alt="Attachment" />
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
