@@ -226,7 +226,7 @@ async function handleMagicLink() {
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: window.location.origin
+      emailRedirectTo: config.APP_URL || window.location.origin
     }
   });
   if (error) {
